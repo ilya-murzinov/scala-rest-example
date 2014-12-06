@@ -1,5 +1,3 @@
-import AssemblyKeys._
-
 name := "scala-rest-example"
 
 version := "1.0"
@@ -25,5 +23,3 @@ resolvers ++= Seq(
 )
 
 tomcat()
-
-assemblySettings
