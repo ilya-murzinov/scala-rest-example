@@ -69,6 +69,12 @@ trait RestService extends HttpService with SLF4JLogging {
           getFromResource("site/index.html")
         }
       }
+    } ~ pathPrefix("fragments") {
+      respondWithMediaType(MediaTypes.`application/javascript`) {
+        get {
+          getFromResourceDirectory("site/fragments")
+        }
+      }
     } ~ pathPrefix("js") {
       respondWithMediaType(MediaTypes.`application/javascript`) {
         get {

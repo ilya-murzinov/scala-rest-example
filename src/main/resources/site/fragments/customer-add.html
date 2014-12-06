@@ -1,0 +1,13 @@
+<form>
+    <fieldset>
+        <legend>Add new customer</legend>
+        <div class="form-group">
+            <input type="text" placeholder="First name" ng-model="customer.firstName">
+        </div>
+        <div class="form-group">
+            <input type="text" placeholder="Last name" ng-model="customer.lastName">
+        </div>
+        <button class="btn btn-danger" ng-click="closeAddCustomerForm()">Cancel</button>
+        <button class="btn btn-info" ng-click="addCustomer(customer.firstName, customer.lastName)">Submit</button>
+    </fieldset>
+</form>

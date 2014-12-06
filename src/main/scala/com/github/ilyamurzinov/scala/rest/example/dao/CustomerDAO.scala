@@ -10,7 +10,6 @@ import slick.jdbc.meta.MTable
 
 class CustomerDAO extends Configuration {
 
-  // init Database instance
   private val db = Database.forURL(url = "jdbc:h2:~/%s/%s".format(dbLocation, dbName),
     user = dbUser, password = dbPassword, driver = "org.h2.Driver")
 
@@ -50,7 +49,7 @@ class CustomerDAO extends Configuration {
     try {
       db.withTransaction {
         val query = Customers.where(_.id === id)
-        val customers = query.run.asInstanceOf[List[Customer]]
+        val customers = query.run.asInstanceOf[Vector[Customer]]
         customers.size match {
           case 0 =>
             Left(notFoundError(id))
