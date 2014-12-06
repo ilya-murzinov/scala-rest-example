@@ -1,7 +1,7 @@
 var app = angular.module('app', []);
 
-app.controller('customerController', function($scope, myService) {
-    myService.getCustomers().then(function(response) {
+app.controller('customerController', function($scope, customerService) {
+    customerService.getCustomers().then(function(response) {
         $scope.customers = response;
     });
 });
