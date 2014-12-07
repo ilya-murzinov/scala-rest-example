@@ -10,10 +10,14 @@ controllers.controller('customerController', ['$location', '$route', '$scope', '
             $scope.customers = result.data;
         });
         $scope.deleteCustomer = function (id) {
-            customerService.deleteCustomer(id, $scope.token);
+            customerService.deleteCustomer(id, $scope.token).then(function () {
+                $location.path('/');
+            });
         };
         $scope.addCustomer = function (fn, ln) {
-            customerService.addCustomer(fn, ln, $scope.token);
+            customerService.addCustomer(fn, ln, $scope.token).then(function () {
+                $route.reload();
+            });
         };
         $scope.openAddCustomerForm = function () {
             $location.path('add');
@@ -51,24 +55,14 @@ controllers.factory('customerService', function ($http) {
                 },
                 firstName: fn,
                 lastName: ln
-            }).then(function () {
-                $location.path('/');
-            }).catch(function (error) {
-                $location.path('/login');
-                console.log(error);
-            });
+            })
         },
         deleteCustomer: function (id, token) {
             return $http.delete('api/customer/' + id, {
                 headers: {
                     'Access-Token': token
                 }
-            }).then(function () {
-                console.log('deleted');
-                $route.reload();
-            }).catch(function (error) {
-                $location.path('/login');
-            });
+            })
         }
     }
 });
