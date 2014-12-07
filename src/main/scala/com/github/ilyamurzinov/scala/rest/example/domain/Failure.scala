@@ -21,6 +21,7 @@ case class Failure(message: String, errorType: FailureType.Value) {
       case FailureType.NotFound => StatusCodes.NotFound
       case FailureType.Duplicate => StatusCodes.Forbidden
       case FailureType.DatabaseFailure => StatusCodes.InternalServerError
+      case FailureType.Unauthorized => StatusCodes.Unauthorized
       case _ => StatusCodes.InternalServerError
     }
   }
@@ -37,5 +38,6 @@ object FailureType extends Enumeration {
   val Duplicate = Value("entity_exists")
   val DatabaseFailure = Value("database_error")
   val InternalError = Value("internal_error")
+  val Unauthorized = Value("unauthorized")
 }
 

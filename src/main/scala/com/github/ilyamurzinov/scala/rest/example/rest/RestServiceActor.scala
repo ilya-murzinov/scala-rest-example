@@ -5,6 +5,7 @@ import java.util.Date
 
 import akka.actor.{Actor, ActorContext}
 import akka.event.slf4j.SLF4JLogging
+import com.github.ilyamurzinov.scala.rest.example.authintication.AuthenticationService
 import com.github.ilyamurzinov.scala.rest.example.dao.CustomerDAO
 import com.github.ilyamurzinov.scala.rest.example.domain._
 import net.liftweb.json.Serialization._
@@ -20,7 +21,7 @@ class RestServiceActor extends Actor with RestService {
   def receive = runRoute(rest ~ static)
 }
 
-trait RestService extends HttpService with SLF4JLogging {
+trait RestService extends HttpService with SLF4JLogging with AuthenticationService {
 
   val customerService = new CustomerDAO
 
@@ -100,62 +101,87 @@ trait RestService extends HttpService with SLF4JLogging {
         }
       } ~
         respondWithMediaType(MediaTypes.`application/json`) {
-          path("customer") {
+          path("tokens") {
             post {
               entity(Unmarshaller(MediaTypes.`application/json`) {
                 case httpEntity: HttpEntity =>
-                  read[Customer](httpEntity.asString(HttpCharsets.`UTF-8`))
+                  read[User](httpEntity.asString(HttpCharsets.`UTF-8`))
               }) {
-                customer: Customer =>
-                  ctx: RequestContext =>
-                    handleRequest(ctx, StatusCodes.Created) {
-                      log.debug("Creating customer: %s".format(customer))
-                      customerService.create(customer)
-                    }
-              }
-            }
-          } ~
-            get {
-              parameters('firstName.as[String] ?, 'lastName.as[String] ?, 'birthday.as[Date] ?).as(CustomerSearchParameters) {
-                searchParameters: CustomerSearchParameters => {
-                  ctx: RequestContext =>
+                user: User => {
+                  ctx: RequestContext => {
                     handleRequest(ctx) {
-                      log.debug("Searching for customers with parameters: %s".format(searchParameters))
-                      customerService.search(searchParameters)
+                      acquireToken(user)
                     }
+                  }
                 }
               }
             }
-        } ~
-        path("customer" / LongNumber) {
-          customerId =>
-            put {
-              entity(Unmarshaller(MediaTypes.`application/json`) {
-                case httpEntity: HttpEntity =>
-                  read[Customer](httpEntity.asString(HttpCharsets.`UTF-8`))
-              }) {
-                customer: Customer =>
-                  ctx: RequestContext =>
-                    handleRequest(ctx) {
-                      log.debug("Updating customer with id %d: %s".format(customerId, customer))
-                      customerService.update(customerId, customer)
+          } ~
+            optionalHeaderValueByName("Access-Token") { accessToken => {
+              ctx: RequestContext =>
+                validateToken(ctx, accessToken) {
+                  path("customer") {
+                    post {
+                      entity(Unmarshaller(MediaTypes.`application/json`) {
+                        case httpEntity: HttpEntity =>
+                          read[Customer](httpEntity.asString(HttpCharsets.`UTF-8`))
+                      }) {
+                        customer: Customer =>
+                          ctx: RequestContext =>
+                            handleRequest(ctx, StatusCodes.Created) {
+                              log.debug("Creating customer: %s".format(customer))
+                              customerService.create(customer)
+                            }
                     }
-              }
-            } ~
-              delete {
-                ctx: RequestContext =>
-                  handleRequest(ctx) {
-                    log.debug("Deleting customer with id %d".format(customerId))
-                    customerService.delete(customerId)
                   }
-              } ~
-              get {
-                ctx: RequestContext =>
-                  handleRequest(ctx) {
-                    log.debug("Retrieving customer with id %d".format(customerId))
-                    customerService.get(customerId)
+                  } ~
+                    get {
+                      parameters('firstName.as[String] ?, 'lastName.as[String] ?, 'birthday.as[Date] ?).as(CustomerSearchParameters) {
+                        searchParameters: CustomerSearchParameters => {
+                          ctx: RequestContext =>
+                            handleRequest(ctx) {
+                              log.debug("Searching for customers with parameters: %s".format(searchParameters))
+                              customerService.search(searchParameters)
+                            }
+                        }
+                      }
+                    } ~
+                    path("customer" / LongNumber) {
+                      customerId =>
+                        put {
+                          entity(Unmarshaller(MediaTypes.`application/json`) {
+                            case httpEntity: HttpEntity =>
+                              read[Customer](httpEntity.asString(HttpCharsets.`UTF-8`))
+                          }) {
+                            customer: Customer =>
+                              ctx: RequestContext =>
+                                handleRequest(ctx) {
+                                  log.debug("Updating customer with id %d: %s".format(customerId, customer))
+                                  customerService.update(customerId, customer)
+                                }
+                          }
+                        } ~
+                          delete {
+                            ctx: RequestContext =>
+                              handleRequest(ctx) {
+                                log.debug("Deleting customer with id %d".format(customerId))
+                                customerService.delete(customerId)
+                              }
+                          } ~
+                          get {
+                            ctx: RequestContext =>
+                              handleRequest(ctx) {
+                                log.debug("Retrieving customer with id %d".format(customerId))
+                                customerService.get(customerId)
+                              }
+                          }
                   }
               }
+
+            }
+
+            }
+
         }
     }
 
