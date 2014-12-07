@@ -25,11 +25,12 @@ class CustomerDAO extends Configuration {
         Customers returning Customers.id insert customer
       }
       Right(customer.copy(id = Some(id)))
-    } catch {
+    }
+    catch {
       case e: SQLException =>
         Left(databaseError(e))
     }
-    }
+  }
 
   def update(id: Long, customer: Customer): Either[Failure, Customer] = {
     try
@@ -59,7 +60,8 @@ class CustomerDAO extends Configuration {
           }
         }
       }
-    } catch {
+    }
+    catch {
       case e: SQLException =>
         Left(databaseError(e))
     }
@@ -75,7 +77,8 @@ class CustomerDAO extends Configuration {
             Left(notFoundError(id))
         }
       }
-    } catch {
+    }
+    catch {
       case e: SQLException =>
         Left(databaseError(e))
     }
@@ -91,8 +94,7 @@ class CustomerDAO extends Configuration {
           Seq(
             params.firstName.map(customer.firstName is _),
             params.lastName.map(customer.lastName is _),
-            params.birthday.map(customer.birthday is _)
-          ).flatten match {
+            params.birthday.map(customer.birthday is _)).flatten match {
             case Nil => ConstColumn.TRUE
             case seq => seq.reduce(_ && _)
           }
@@ -101,7 +103,8 @@ class CustomerDAO extends Configuration {
 
         Right(query.run.toList)
       }
-    } catch {
+    }
+    catch {
       case e: SQLException =>
         Left(databaseError(e))
     }

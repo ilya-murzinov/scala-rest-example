@@ -33,7 +33,8 @@ trait RestService extends HttpService with SLF4JLogging with AuthenticationServi
 
       def parse(s: String): Option[Date] = try {
         Some(sdf.parse(s))
-      } catch {
+      }
+      catch {
         case e: Exception => None
       }
 
@@ -132,8 +133,8 @@ trait RestService extends HttpService with SLF4JLogging with AuthenticationServi
                               log.debug("Creating customer: %s".format(customer))
                               customerService.create(customer)
                             }
+                      }
                     }
-                  }
                   } ~
                     get {
                       parameters('firstName.as[String] ?, 'lastName.as[String] ?, 'birthday.as[Date] ?).as(CustomerSearchParameters) {
@@ -175,8 +176,8 @@ trait RestService extends HttpService with SLF4JLogging with AuthenticationServi
                                 customerService.get(customerId)
                               }
                           }
-                  }
-              }
+                    }
+                }
 
             }
 

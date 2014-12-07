@@ -18,7 +18,8 @@ trait AuthenticationService {
       case Some(str) =>
         if (tokens.contains(str)) {
           route.apply(ctx)
-        } else {
+        }
+        else {
           ctx.complete(StatusCodes.Unauthorized)
         }
     }
@@ -30,7 +31,8 @@ trait AuthenticationService {
       val string: String = UUID.randomUUID().toString
       tokens += string
       Right(new Token(string))
-    } catch {
+    }
+    catch {
       case e: Exception =>
         Left(Failure("Wrong username or password", FailureType.Unauthorized))
     }
