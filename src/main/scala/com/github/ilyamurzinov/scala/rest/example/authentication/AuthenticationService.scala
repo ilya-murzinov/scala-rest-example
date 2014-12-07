@@ -1,4 +1,4 @@
-package com.github.ilyamurzinov.scala.rest.example.authintication
+package com.github.ilyamurzinov.scala.rest.example.authentication
 
 import java.util.UUID
 

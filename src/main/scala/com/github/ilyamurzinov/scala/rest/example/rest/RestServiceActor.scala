@@ -5,7 +5,7 @@ import java.util.Date
 
 import akka.actor.{Actor, ActorContext}
 import akka.event.slf4j.SLF4JLogging
-import com.github.ilyamurzinov.scala.rest.example.authintication.AuthenticationService
+import com.github.ilyamurzinov.scala.rest.example.authentication.AuthenticationService
 import com.github.ilyamurzinov.scala.rest.example.dao.CustomerDAO
 import com.github.ilyamurzinov.scala.rest.example.domain._
 import net.liftweb.json.Serialization._
