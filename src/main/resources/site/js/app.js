@@ -12,6 +12,10 @@ app.config(['$routeProvider',
             }).when('/add', {
                 templateUrl: 'fragments/customer-add.html',
                 controller: 'customerController'
+            }).
+            when('/login', {
+                templateUrl: 'fragments/login.html',
+                controller: 'loginController'
             }).otherwise({
                 redirectTo: '/'
             });
