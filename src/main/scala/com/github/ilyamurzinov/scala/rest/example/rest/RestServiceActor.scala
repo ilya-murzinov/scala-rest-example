@@ -128,10 +128,12 @@ trait RestService extends HttpService with SLF4JLogging with AuthenticationServi
                 user: User =>
                   acquireToken(user) match {
                     case None =>
-                      complete(StatusCodes.Unauthorized)
+                      respondWithStatus(StatusCodes.Unauthorized) {
+                        complete("")
+                      }
                     case Some(token) =>
                       setCookie(HttpCookie(ACCESS_TOKEN_COOKIE, token.token)) {
-                        complete(StatusCodes.OK)
+                        complete(write(token))
                       }
                   }
               }
@@ -144,58 +146,62 @@ trait RestService extends HttpService with SLF4JLogging with AuthenticationServi
     respondWithMediaType(MediaTypes.`application/json`) {
       optionalCookie(ACCESS_TOKEN_COOKIE) { accessToken => {
         pathPrefix("api") {
-          ctx: RequestContext =>
-            validateToken(ctx, accessToken) {
-              path("customer") {
-                post {
-                  entity(as[Customer]) {
-                    customer: Customer =>
-                      ctx: RequestContext =>
-                        handleRequest(ctx, StatusCodes.Created) {
-                          log.debug("Creating customer: %s".format(customer))
-                          customerService.create(customer)
-                        }
-                  }
+            validateToken(accessToken) {
+              case false =>
+                respondWithStatus(StatusCodes.Unauthorized) {
+                  complete("")
                 }
-              } ~
-                get {
-                  parameters('firstName.as[String] ?, 'lastName.as[String] ?, 'birthday.as[Date] ?).as(CustomerSearchParameters) {
-                    searchParameters: CustomerSearchParameters => {
-                      ctx: RequestContext =>
-                        handleRequest(ctx) {
-                          log.debug("Searching for customers with parameters: %s".format(searchParameters))
-                          customerService.search(searchParameters)
-                        }
+              case true =>
+                path("customer") {
+                  post {
+                    entity(as[Customer]) {
+                      customer: Customer =>
+                        ctx: RequestContext =>
+                          handleRequest(ctx, StatusCodes.Created) {
+                            log.debug("Creating customer: %s".format(customer))
+                            customerService.create(customer)
+                          }
                     }
                   }
                 } ~
-                path("customer" / LongNumber) {
-                  customerId =>
-                    put {
-                      entity(as[Customer]) {
-                        customer: Customer =>
+                  get {
+                    parameters('firstName.as[String] ?, 'lastName.as[String] ?, 'birthday.as[Date] ?).as(CustomerSearchParameters) {
+                      searchParameters: CustomerSearchParameters => {
+                        ctx: RequestContext =>
+                          handleRequest(ctx) {
+                            log.debug("Searching for customers with parameters: %s".format(searchParameters))
+                            customerService.search(searchParameters)
+                          }
+                      }
+                    }
+                  } ~
+                  path("customer" / LongNumber) {
+                    customerId =>
+                      put {
+                        entity(as[Customer]) {
+                          customer: Customer =>
+                            ctx: RequestContext =>
+                              handleRequest(ctx) {
+                                log.debug("Updating customer with id %d: %s".format(customerId, customer))
+                                customerService.update(customerId, customer)
+                              }
+                        }
+                      } ~
+                        delete {
                           ctx: RequestContext =>
                             handleRequest(ctx) {
-                              log.debug("Updating customer with id %d: %s".format(customerId, customer))
-                              customerService.update(customerId, customer)
+                              log.debug("Deleting customer with id %d".format(customerId))
+                              customerService.delete(customerId)
                             }
-                      }
-                    } ~
-                      delete {
-                        ctx: RequestContext =>
-                          handleRequest(ctx) {
-                            log.debug("Deleting customer with id %d".format(customerId))
-                            customerService.delete(customerId)
-                          }
-                      } ~
-                      get {
-                        ctx: RequestContext =>
-                          handleRequest(ctx) {
-                            log.debug("Retrieving customer with id %d".format(customerId))
-                            customerService.get(customerId)
-                          }
-                      }
-                }
+                        } ~
+                        get {
+                          ctx: RequestContext =>
+                            handleRequest(ctx) {
+                              log.debug("Retrieving customer with id %d".format(customerId))
+                              customerService.get(customerId)
+                            }
+                        }
+                  }
             }
           }
         }

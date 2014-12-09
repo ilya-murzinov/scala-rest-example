@@ -5,23 +5,19 @@ import java.util.UUID
 import com.github.ilyamurzinov.scala.rest.example.domain.User
 import spray.http.{HttpCookie, StatusCodes}
 import spray.routing._
+import spray.routing.directives.BasicDirectives
 
 import scala.collection.mutable
 
-trait AuthenticationService {
+trait AuthenticationService extends BasicDirectives {
   val tokens: mutable.MutableList[String] = mutable.MutableList()
 
-  protected def validateToken(ctx: RequestContext, accessToken: Option[HttpCookie])(route: Route) {
+  protected def validateToken(accessToken: Option[HttpCookie]): Directive1[Boolean] = {
     accessToken match {
       case None =>
-        ctx.complete(StatusCodes.Unauthorized)
+        provide(false)
       case Some(cookie) =>
-        if (tokens.contains(cookie.content)) {
-          route.apply(ctx)
-        }
-        else {
-          ctx.complete(StatusCodes.Unauthorized)
-        }
+        provide(tokens.contains(cookie.content))
     }
   }
 
