@@ -16,7 +16,7 @@ trait AuthenticationService {
       case None =>
         ctx.complete(StatusCodes.Unauthorized)
       case Some(cookie) =>
-        if (tokens.contains(cookie.value)) {
+        if (tokens.contains(cookie.content)) {
           route.apply(ctx)
         }
         else {
