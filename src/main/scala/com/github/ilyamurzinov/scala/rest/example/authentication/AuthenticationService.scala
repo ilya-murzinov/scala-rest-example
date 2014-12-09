@@ -2,8 +2,8 @@ package com.github.ilyamurzinov.scala.rest.example.authentication
 
 import java.util.UUID
 
-import com.github.ilyamurzinov.scala.rest.example.domain.{User, FailureType, Failure}
-import spray.http.StatusCodes
+import com.github.ilyamurzinov.scala.rest.example.domain.User
+import spray.http.{HttpCookie, StatusCodes}
 import spray.routing._
 
 import scala.collection.mutable
@@ -11,12 +11,12 @@ import scala.collection.mutable
 trait AuthenticationService {
   val tokens: mutable.MutableList[String] = mutable.MutableList()
 
-  protected def validateToken(ctx: RequestContext, accessToken: Option[String])(route: Route) {
+  protected def validateToken(ctx: RequestContext, accessToken: Option[HttpCookie])(route: Route) {
     accessToken match {
       case None =>
         ctx.complete(StatusCodes.Unauthorized)
-      case Some(str) =>
-        if (tokens.contains(str)) {
+      case Some(cookie) =>
+        if (tokens.contains(cookie.value)) {
           route.apply(ctx)
         }
         else {
@@ -25,22 +25,13 @@ trait AuthenticationService {
     }
   }
 
-  protected def acquireToken(user: User): Either[Failure, Token] = {
-    try {
-      checkUser(user)
+  protected def acquireToken(user: User): Option[Token] = {
+    if (user.username == "test" && user.password == "test") {
       val string: String = UUID.randomUUID().toString
       tokens += string
-      Right(new Token(string))
-    }
-    catch {
-      case e: Exception =>
-        Left(Failure("Wrong username or password", FailureType.Unauthorized))
-    }
-  }
-
-  private def checkUser(user: User): Unit = {
-    if (user.username != "test" || user.password != "test") {
-      throw new Exception
+      Option(new Token(string))
+    } else {
+      Option.empty
     }
   }
 }
