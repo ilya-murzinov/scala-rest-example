@@ -11,6 +11,17 @@
     <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
-<div class="main" ng-view></div>
+
+<div class="main">
+
+    <div ng-controller="commonController">
+        <button class="btn btn-default" ng-click="logout()" ng-if="loggedIn()">Logout</button>
+    </div>
+
+    <div  ng-view>
+
+    </div>
+</div>
+
 </body>
 </html>

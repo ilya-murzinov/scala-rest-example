@@ -138,6 +138,12 @@ trait RestService extends HttpService with SLF4JLogging with AuthenticationServi
                   }
               }
             }
+          } ~ path("logout") {
+            get {
+              setCookie(new HttpCookie(ACCESS_TOKEN_COOKIE, "")) {
+                complete("")
+              }
+            }
           }
         }
     }
